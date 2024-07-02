@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xhr</title>
+</head>
+<body>
+    <h1>客户端</h1>
+    <button id="btn">点我发送请求</button>
+    <div id="root"></div>
+
+    <script>
+        const btn = document.getElementById("btn");
+        const root = document.getElementById("root");
+        
+
+        btn.onclick = ()=>{
+            // 创建xhr对象
+            const xhr = new XMLHttpRequest()
+
+            // 设置请求信息
+            xhr.open("GET", "http://localhost:3000/students")
+
+            // 发送请求
+            xhr.send()
+
+            xhr.responseType = "json"
+            // 读取响应信息
+            xhr.onload = function(){
+                if(xhr.status !== 200 || xhr.response.status !== "ok") return;
+                // const data = JSON.parse(xhr.response).data
+                const data = xhr.response.data
+                // console.log(data);
+                const ul = document.createElement('ul')
+                root.appendChild(ul)
+
+                for (let item of data) {
+                    ul.insertAdjacentHTML("afterbegin", `<li>${item.name} -- ${item.age} -- ${item.gender} -- ${item.address}</li>`)
+                }
+
+                
+                
+            }
+
+
+
+        }
+
+
+
+    </script>
+</body>
+</html>
