@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>axios请求库</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <button id="btn1">按钮1</button>
+    <button id="btn2">按钮2</button>
+    
+
+    <script>
+        // axios相当于时xhr的封装
+        // console.log(axios);
+        btn1.onclick = ()=>{
+            axios({ // axios请求
+                method: "post",
+                url: "http://localhost:3000/students",
+                data:{ // 请求参数
+                    name: {
+                        name: "阿斯蒂芬",
+                        age: 22,
+                        gender: "男",
+                        address: "asdf"
+                    }
+                }
+            }).then((result) => {
+                // axios 默认只会在现有状态为2.。时，才会调用then
+                // result是axios封装过的
+                console.log(result.data);
+            }).catch((err) => {
+                console.log("出错了", err);
+            });
+        }
+
+
+
+
+    </script>
+</body>
+</html>

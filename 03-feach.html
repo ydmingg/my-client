@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>feach请求</title>
+</head>
+<body>
+    <button id="btn">点我发送请求</button>
+    <div id="root"></div>
+
+
+    <script>
+        const btn = document.getElementById("btn");
+        const root = document.getElementById("root");
+
+        btn.onclick = ()=>{
+            fetch("http://localhost:3000/students")
+            .then((res)=>{
+                if(res.status === 200){
+                    return res.json()
+                }else{
+                    throw new Error("加载失败")
+                }
+            })
+            .then((res)=>{
+                console.log(res);
+                // 获取到数据，然后渲染
+                if(res.status==="ok"){
+                    const table = document.createElement("table")
+                    table.border ="1"
+                    table.insertAdjacentHTML("afterbegin", `<caption>学生列表</caption>`)
+                    table.insertAdjacentHTML("afterbegin", `
+                        <thead>
+                            <tr>
+                                <th>学号</td>
+                                <th>姓名</th>
+                                <th>年龄</th>
+                                <th>性别</th>
+                                <th>地址</th>
+                            </tr>    
+                        </thead>
+                    `)
+                    
+                    const tbody = document.createElement("tbody")
+                    // 遍历数组
+                    for (const stu of res.data) {
+                        tbody.insertAdjacentHTML("beforeend", `
+                        <tr>
+                            <td>${stu.id}</td>
+                            <td>${stu.name}</td>
+                            <td>${stu.age}</td>
+                            <td>${stu.gender}</td>
+                            <td>${stu.address}</td>
+                        </tr>  
+                    `)
+                    }
+
+                    table.appendChild(tbody)
+                    root.appendChild(table)
+                }
+            })
+            .catch((err)=>{
+                console.log("出错了，", err);
+            })
+
+
+
+        }
+
+
+    </script>
+</body>
+</html>

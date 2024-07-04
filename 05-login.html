@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>feach请求</title>
+</head>
+<body>
+    <div id="root">
+        <h1>登录</h1>
+        <h2 id="info"></h2>
+        <div>
+            <input id="username" type="text" placeholder="用户名">
+        </div>
+        <div>
+            <input id="password" type="password" placeholder="密码">
+        </div>
+        <div>
+            <button id="login-btn" type="button">登录</button>
+        </div>
+    </div>
+
+
+    <script>
+        // 点击登录发送请求
+        const login_btn = document.getElementById("login-btn")
+        const info = document.getElementById("info")
+        const root = document.getElementById("root")
+        login_btn.onclick = ()=>{
+            // 获取用户名和密码
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+            console.log(username,password);
+            // 发送请求
+            fetch("http://localhost:3000/login",{
+                method: "post",
+                headers: {
+                    "Content-type": "application/json"
+                },
+                body:JSON.stringify({username,password})
+            })
+            .then((res)=> res.json())
+            .then((res)=>{
+                if(res.status !== "ok"){
+                    throw new Error("加载失败");
+                }
+                // 登录成功后，要保持登录状态，要将用户信息存在本地存储
+                
+                
+
+                root.innerHTML = `
+                    <h1>欢迎，${res.data.username}回来</h1>
+                    <hr>
+                    <button id="load-btn">加载数据中...</button>
+                `
+            })
+            .catch((err)=>{
+                console.log("出错了", err);
+                info.innerText = "用户名或密码错误"
+            })
+
+        }
+
+    </script>
+</body>
+</html>

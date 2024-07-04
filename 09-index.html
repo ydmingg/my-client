@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button id="btn">点我一下</button>
+    <button id="btn2">取消</button>
+    <button id="btn3">dian </button>
+
+    <script>
+        const btn = document.getElementById("btn")
+        const btn2 = document.getElementById("btn2")
+        const btn3 = document.getElementById("btn3")
+        let controller ;
+        btn.onclick = ()=>{
+            // 创建一个AbortController：（用来终止请求）
+            // const controller = new AbortController()
+            controller = new AbortController()
+            // 启动生效
+            // setTimeout(() => {
+            //     controller.abort()
+            // }, 3000);
+
+            // 点击按钮向test发送请求
+            fetch("http://localhost:3000/test",{
+                signal: controller.signal
+            })
+            .then((res)=>console.log("出错了"))
+            .catch((err)=>console.log("出错了", err))
+        }
+
+        btn2.onclick = ()=>{
+            controller && controller.abort()
+        }
+
+        btn3.onclick = async ()=>{
+            // 之前的请求方式
+            // fetch("http://localhost:3000/test").then()...
+
+            // 注意：将promise改写为await时，一定要写try-catch
+            try{
+                // 用await异步的方式读取请求（暂时关闭后台的权限（请求头））
+                const res = await fetch("http://localhost:3000/students")
+                            
+                // 将数据转换为json格式
+                const data = await res.json();
+                console.log(data);
+            } catch(err){
+                console.log("出错了", err);
+            }
+            
+            
+            
+
+        }
+
+        
+
+    </script>
+</body>
+</html>

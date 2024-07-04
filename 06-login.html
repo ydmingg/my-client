@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>feach请求</title>
+</head>
+<body>
+    <div id="root">
+        <h1>登录</h1>
+        <h2 id="info"></h2>
+        <div>
+            <input id="username" type="text" placeholder="用户名">
+        </div>
+        <div>
+            <input id="password" type="password" placeholder="密码">
+        </div>
+        <div>
+            <button id="login-btn" type="button">登录</button>
+        </div>
+    </div>
+
+
+    <script>
+        /** 
+         * 现在时登录之后直接将用户信息存到了LocalStorage中了
+         * 主要存在两个问题
+         *      * 数据安全问题（数据不安全）
+         *      * 服务器不知道你有没有登录
+         * 
+         * 
+         * **/
+
+
+
+        // 点击登录发送请求
+        const login_btn = document.getElementById("login-btn")
+        const info = document.getElementById("info")
+        const root = document.getElementById("root")
+
+        // 数据加载函数
+        function loadData(){
+            fetch("http://localhost:3000/students")
+            .then((res)=>{
+                if(res.status === 200){
+                    return res.json()
+                }else{
+                    throw new Error("加载失败")
+                }
+            })
+            .then((res)=>{
+                console.log(res);
+                // 获取到数据，然后渲染
+                if(res.status==="ok"){
+                    const dataDiv = document.getElementById("data")
+                    const table = document.createElement("table")
+                    dataDiv.appendChild(table)
+
+                    table.border ="1"
+                    table.insertAdjacentHTML("afterbegin", `<caption>学生列表</caption>`)
+                    table.insertAdjacentHTML("afterbegin", `
+                        <thead>
+                            <tr>
+                                <th>学号</td>
+                                <th>姓名</th>
+                                <th>年龄</th>
+                                <th>性别</th>
+                                <th>地址</th>
+                            </tr>    
+                        </thead>
+                    `)
+                    
+                    const tbody = document.createElement("tbody")
+                    table.appendChild(tbody)
+                    // 遍历数组
+                    for (const stu of res.data) {
+                        tbody.insertAdjacentHTML("beforeend", `
+                        <tr>
+                            <td>${stu.id}</td>
+                            <td>${stu.name}</td>
+                            <td>${stu.age}</td>
+                            <td>${stu.gender}</td>
+                            <td>${stu.address}</td>
+                        </tr>  
+                    `)}
+
+                    
+                    
+
+                }
+            })
+            .catch((err)=>{
+                console.log("出错了，", err);
+            })
+        }
+
+        // 判断用户是否登录
+        if(localStorage.getItem("nickname")){
+            root.innerHTML = `
+                <h1>欢迎，${localStorage.getItem("username")}回来</h1>
+                <hr>
+                <button id="load-btn" onclick="loadData()">加载数据中...</button>
+                <hr>
+                <div id="data"></div>
+            `
+        }else{
+            login_btn.onclick = ()=>{
+                // 获取用户名和密码
+                const username = document.getElementById("username").value.trim();
+                const password = document.getElementById("password").value.trim();
+                console.log(username,password);
+                // 发送请求
+                fetch("http://localhost:3000/login",{
+                    method: "post",
+                    headers: {
+                        "Content-type": "application/json"
+                    },
+                    body:JSON.stringify({username,password})
+                })
+                .then((res)=> res.json())
+                .then((res)=>{
+                    if(res.status !== "ok"){
+                        throw new Error("加载失败");
+                    }
+                    // 登录成功后，要保持登录状态，要将用户信息存在本地存储
+                    // 将信息存到本地存储（LocalStorage）中
+                    localStorage.setItem("username",res.data.username)
+                    localStorage.setItem("userId",res.data.id)
+                    localStorage.setItem("nickname",res.data.nickname)
+
+                    root.innerHTML = `
+                        <h1>欢迎，${res.data.username}回来</h1>
+                        <hr>
+                        <button id="load-btn" onclick="loadData()">加载数据中...</button>
+                        <hr>
+                        <div id="data"></div>
+                        `
+                })
+                .catch((err)=>{
+                    console.log("出错了", err);
+                    info.innerText = "用户名或密码错误"
+                })
+
+            }
+        }
+
+        
+
+    </script>
+</body>
+</html>

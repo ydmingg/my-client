@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>token</title>
+</head>
+<body>
+    <div id="root">
+        <h1>登录</h1>
+        <h2 id="info"></h2>
+        <div>
+            <input id="username" type="text" placeholder="用户名">
+        </div>
+        <div>
+            <input id="password" type="password" placeholder="密码">
+        </div>
+        <div>
+            <button id="login-btn" type="button">登录</button>
+        </div>
+    </div>
+
+
+    <script>
+        /** 
+         * 现在时登录之后直接将用户信息存到了LocalStorage中了
+         * 主要存在两个问题
+         *      * 数据安全问题（数据不安全）
+         *      * 服务器不知道你有没有登录
+         * 检查登录要同时验证前后端，尤其是后端验证必须有
+         * 解决问题：
+         *      * 如何告诉服务器，客户端时登录状态
+         *          * rest风格的服务器时无状态服务器，所以注意不要在服务器中存储用户的数据
+         *          * 可以将用户信息发送到客户端保存
+         *              * 客户端每次访问服务器时，直接将用户信息发回，放服务器就可以根据用户信息来识别用户的身份
+         *          * 但是如果将数据直接发给客户端同样会有数据安全的问题
+         *              * 所以我们必须对数据进行加密，加密以后再发给客户端保存，这样即可避免数据的泄露
+         *          * 在node中，我们可以直接使用jsonwebtoken 这个包来对数据进行加密
+         *              * jsonwebtoken（jwt）: 通过对json加密后，生成一个在web端使用的令牌
+         *          
+         * 
+         * 
+         * **/
+
+
+
+        // 点击登录发送请求
+        const login_btn = document.getElementById("login-btn")
+        const info = document.getElementById("info")
+        const root = document.getElementById("root")
+
+
+        // 数据加载函数
+        function loadData(){
+            // 有token时，当我们访问的是有权限的api时，必须在我们请求中，附加权限的信息
+            // token一般都是通过请求头发送
+            const token = localStorage.getItem("token")
+
+            // 所以fetch在发送请求头时，我们就需要给他设置一个请求头
+            fetch("http://localhost:3000/students", {
+                headers: {
+                    // authorization 有格式要求,前面加Bearer
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+            .then((res)=>{
+                if(res.status === 200){
+                    return res.json()
+                }else{
+                    throw new Error("加载失败")
+                }
+            })
+            .then((res)=>{
+                // 获取到数据，然后渲染
+                if(res.status==="ok"){
+                    const dataDiv = document.getElementById("data")
+                    const table = document.createElement("table")
+                    dataDiv.appendChild(table)
+
+                    table.border ="1"
+                    table.insertAdjacentHTML("afterbegin", `<caption>学生列表</caption>`)
+                    table.insertAdjacentHTML("afterbegin", `
+                        <thead>
+                            <tr>
+                                <th>学号</td>
+                                <th>姓名</th>
+                                <th>年龄</th>
+                                <th>性别</th>
+                                <th>地址</th>
+                            </tr>    
+                        </thead>
+                    `)
+                    
+                    const tbody = document.createElement("tbody")
+                    table.appendChild(tbody)
+                    // 遍历数组
+                    for (const stu of res.data) {
+                        tbody.insertAdjacentHTML("beforeend", `
+                        <tr>
+                            <td>${stu.id}</td>
+                            <td>${stu.name}</td>
+                            <td>${stu.age}</td>
+                            <td>${stu.gender}</td>
+                            <td>${stu.address}</td>
+                        </tr>  
+                    `)}
+
+                    
+                    
+
+                }
+            })
+            .catch((err)=>{
+                console.log("出错了，", err);
+            })
+        }
+
+        // 判断用户是否登录if(localStorage.getItem("nickname"))
+        // 当有token时，判断token
+        if(localStorage.getItem("token")){
+            root.innerHTML = `
+                                <h1>欢迎，${localStorage.getItem("nickname")}回来</h1>
+                                <hr>
+                                <button id="load-btn" onclick="loadData()">加载数据中...</button>
+                                <hr>
+                                <button onclick="localStorage.clear()">注销</button>
+                                <hr>
+                                <div id="data"></div>
+                            `
+        }else{
+            login_btn.onclick = ()=>{
+                // 获取用户名和密码
+                const username = document.getElementById("username").value.trim();
+                const password = document.getElementById("password").value.trim();
+                console.log(username,password);
+                // 发送请求
+                fetch("http://localhost:3000/login",{
+                    method: "post",
+                    headers: {
+                        "Content-type": "application/json"
+                    },
+                    body:JSON.stringify({username,password})
+                })
+                .then((res)=> res.json())
+                .then((res)=>{
+                    if(res.status !== "ok"){
+                        throw new Error("加载失败");
+                    }
+                    // 登录成功后，要保持登录状态，要将用户信息存在本地存储
+                    // 将信息存到本地存储（LocalStorage）中
+                    // localStorage.setItem("username",res.data.username)
+                    // localStorage.setItem("userId",res.data.id)
+                    // localStorage.setItem("nickname",res.data.nickname)
+                    // 获取token
+                    localStorage.setItem("token",res.data.token)
+                    localStorage.setItem("nickname",res.data.nickname)
+
+                    root.innerHTML = `
+                                <h1>欢迎，${res.data.username}回来</h1>
+                                <hr>
+                                <button id="load-btn" onclick="loadData()">加载数据中...</button>
+                                <hr>
+                                <button onclick="localStorage.clear()">注销</button>
+                                <hr>
+                                <div id="data"></div>
+                            `
+                })
+                .catch((err)=>{
+                    console.log("出错了", err);
+                    info.innerText = "用户名或密码错误"
+                })
+
+            }
+        }
+
+        
+
+    </script>
+</body>
+</html>

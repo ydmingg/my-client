@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>axios请求库</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <button id="btn1">按钮1</button>
+    <button id="btn2">按钮2</button>
+    
+
+    <script>
+        const btn1 = document.getElementById("btn1")
+        axios.defaults.baseURL = "http://localhost:3000"
+        axios.defaults.headers.common[
+            "Authorization"
+        ] = `Bearer ${localStorage.getItem('token')}`
+
+        btn1.onclick = ()=>{
+            axios({
+                // baseURL: "http://localhost:3000/", // 指定服务器登录的根目录（路径前缀）
+                url: "students",
+                method: "post", // 默认get，请求方法
+                // headers:{"Content-type":"application/json"}, // 指定请求头
+                // 请求体
+                // data: "name=张三&age=16"
+                data:{name:"asd",age:11,gender:"男",address:"地方"},
+                // params 用来指定路径中查询字符串
+                // params:{
+                //     id:1,
+                //     name: "9999999"
+                // },
+                // 请求过期时间
+                // timeout: 1000,
+                // signal 用来终止请求
+                // signal
+
+                // // transformRequest用来处理请求数据（data）
+                // // 她需要一个数组作为参数，数组可以接收多个函数，请求发送时，函数会按照顺序执行
+                // // 函数在执行时，会接受到两个参数data,和headers
+                // transformRequest:[function(data,headers){
+                //     console.log(data);
+                //     console.log(headers);
+                //     // 可以在函数中对data和header进行修改.....
+                //     data.name = "猪八戒"
+                //     headers["Content-Type"] = "application/json" 
+                //     return data
+                // },function(data,headers){
+                //     console.log(22222,data);
+                //     // 注意：最后一个函数必须得返回一个字符串，才能使数据有效
+                //     return JSON.stringify(data)
+                // }]
+            })
+            .then((result) => {
+                console.log(result.data);
+
+            }).catch((err) => {
+                console.log("出错了", err);
+            });
+
+
+        }
+
+
+
+
+    </script>
+</body>
+</html>
